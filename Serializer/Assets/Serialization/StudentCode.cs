@@ -8,10 +8,12 @@ using System.IO;
 // and one for members to add to the Deserializer class.
 //
 namespace Assets.Serialization
-{
+{   
+    
     // The partial keyword just means we're adding these three methods to the code in Serializer.cs
     public partial class Serializer
     {
+        
         /// <summary>
         /// Print out the serialization data for the specified object.
         /// </summary>
@@ -21,30 +23,36 @@ namespace Assets.Serialization
             switch (o)
             {
                 case null:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new ArgumentNullException("nullptr");
+                    Write("null");
                     break;
 
                 case int i:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new NotImplementedException("Fill me in");
+                    Write(i);
                     break;
 
                 case float f:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new NotImplementedException("Fill me in");
+                    Write(f);
                     break;
 
                 // BUG: this doesn't handle strings that themselves contain quote marks
                 // but that doesn't really matter for an assignment like this, so I'm not
                 // going to confuse the reader by complicating the code to escape the strings.
                 case string s:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new NotImplementedException("Fill me in");
+                    Write(s);
                     break;
 
                 case bool b:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new NotImplementedException("Fill me in");
+                    Write(b);
                     break;
 
                 case IList list:
-                    throw new NotImplementedException("Fill me in");
+                    //throw new NotImplementedException("Fill me in");
+                    WriteList(list);
                     break;
 
                 default:
@@ -71,6 +79,10 @@ namespace Assets.Serialization
     // The partial keyword just means we're adding these three methods to the code in Deserializer.cs
     public partial class Deserializer
     {
+
+        // tracking all objects
+        HashSet<object> table = new HashSet<object>();
+
         /// <summary>
         /// Read whatever data object is next in the stream
         /// </summary>
@@ -122,7 +134,12 @@ namespace Assets.Serialization
             SkipWhitespace();
 
             // You've got the id # of the object.  Are we done now?
-            throw new NotImplementedException("Fill me in");
+            //throw new NotImplementedException("Fill me in");
+            if(!table.Contains(id)) {
+                table.Add(id);
+            } else {
+
+            }
 
             // Assuming we aren't done, let's check to make sure there's a { next
             SkipWhitespace();
