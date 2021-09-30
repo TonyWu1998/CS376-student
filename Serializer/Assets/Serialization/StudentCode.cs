@@ -13,7 +13,8 @@ namespace Assets.Serialization
     // The partial keyword just means we're adding these three methods to the code in Serializer.cs
     public partial class Serializer
     {
-        
+        Dictionary<object, int> dict = new Dictionary<object, int>();
+        int id_count = 0;
         /// <summary>
         /// Print out the serialization data for the specified object.
         /// </summary>
@@ -72,7 +73,41 @@ namespace Assets.Serialization
         /// <param name="o">Object to serialize</param>
         private void WriteComplexObject(object o)
         {
-            throw new NotImplementedException("Fill me in");
+            //throw new NotImplementedException("Fill me in complex");
+            
+            if(o != null)
+                return ;
+            
+            if(dict.ContainsKey(o)) {
+                Write(dict[o]);
+                return ;
+            }
+            dict.Add(o, ++id_count);    // assign id and add it to the dictionary.
+
+            // write #id
+            Write("#");
+            Write(id_count);
+            Write("{");
+            IEnumerable<KeyValuePair<string, object>> fields = Utilities.SerializedFields(o);
+
+            var first_order = true;
+            foreach(var item in fields) {
+                //Console.WriteLine(item.Key + " : " + item.Value);
+                if(first_order) first_order = false;
+
+                if(item.Value.GetType() != typeof(IList)) {
+                    WriteField(item.Key, item.Value, first_order);
+                } else {
+                    Write(item.Key);
+                    Write(" : ");
+                    Write("[");
+                    WriteComplexObject(item.Value);
+                    Write("]");
+                }
+            }
+
+            Write("}");
+            
         }
     }
 
@@ -81,7 +116,8 @@ namespace Assets.Serialization
     {
 
         // tracking all objects
-        HashSet<object> table = new HashSet<object>();
+        Dictionary<object, int> dict = new Dictionary<object, int>();
+        object prev_object = null;
 
         /// <summary>
         /// Read whatever data object is next in the stream
@@ -135,10 +171,8 @@ namespace Assets.Serialization
 
             // You've got the id # of the object.  Are we done now?
             //throw new NotImplementedException("Fill me in");
-            if(!table.Contains(id)) {
-                table.Add(id);
-            } else {
-
+            if(dict.ContainsValue(id) && prev_object != null) {
+                return prev_object;
             }
 
             // Assuming we aren't done, let's check to make sure there's a { next
