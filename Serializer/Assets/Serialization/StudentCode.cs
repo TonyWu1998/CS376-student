@@ -43,7 +43,7 @@ namespace Assets.Serialization
                 // going to confuse the reader by complicating the code to escape the strings.
                 case string s:
                     //throw new NotImplementedException("Fill me in");
-                    Write(s);
+                    Write("\"" + s + "\"");
                     break;
 
                 case bool b:
@@ -75,40 +75,57 @@ namespace Assets.Serialization
         {
             //throw new NotImplementedException("Fill me in complex");
             
+            /*
             if(o != null)
                 return ;
-            
+            */
             if(dict.ContainsKey(o)) {
+                Write("#");
                 Write(dict[o]);
                 return ;
             }
-            dict.Add(o, ++id_count);    // assign id and add it to the dictionary.
+            dict.Add(o, id_count++);    // assign id and add it to the dictionary.
 
             // write #id
-            Write("#");
-            Write(id_count);
-            Write("{");
+            
+            
             IEnumerable<KeyValuePair<string, object>> fields = Utilities.SerializedFields(o);
-
-            var first_order = true;
-            foreach(var item in fields) {
+            
+            //var first_order = true;
+            Write("#");
+            Write(dict[o]);
+            
+            WriteBracketedExpression("{", ()=> {
+                /*
+                Write("type: ");
+                Write();
+                NewLine();
+                */
+                WriteField("type", o.GetType().Name, true);
+                foreach(var item in fields) {
                 //Console.WriteLine(item.Key + " : " + item.Value);
-                if(first_order) first_order = false;
-
+                    WriteField(item.Key, item.Value, false);
+                //NewLine();
+                
+                /*
                 if(item.Value.GetType() != typeof(IList)) {
-                    WriteField(item.Key, item.Value, first_order);
+                    if(first_order) first_order = false;
+                    WriteBracketedExpression("{", ()=>{
+                        
+                    }, "}");
                 } else {
-                    Write(item.Key);
-                    Write(" : ");
-                    Write("[");
-                    WriteComplexObject(item.Value);
-                    Write("]");
+                    WriteBracketedExpression("[", ()=>{
+                        WriteField(item.Key, item.Value, first_order);
+                    }, "]");
                 }
+                */
+                
             }
-
-            Write("}");
+            }, "}");
             
         }
+        
+        
     }
 
     // The partial keyword just means we're adding these three methods to the code in Deserializer.cs
@@ -165,16 +182,18 @@ namespace Assets.Serialization
         /// <returns>The object referred to by this #id expression.</returns>
         private object ReadComplexObject(int enclosingId)
         {
+            
             GetChar();  // Swallow the #
             var id = (int)ReadNumber(enclosingId);
             SkipWhitespace();
-
+            
             // You've got the id # of the object.  Are we done now?
             //throw new NotImplementedException("Fill me in");
+            
             if(dict.ContainsValue(id) && prev_object != null) {
                 return prev_object;
             }
-
+            
             // Assuming we aren't done, let's check to make sure there's a { next
             SkipWhitespace();
             if (End)
@@ -183,9 +202,11 @@ namespace Assets.Serialization
             if (c != '{')
                 throw new Exception($"Expected '{'{'}' after #{id} but instead got {c}");
 
+            
             // There's a {.
             // Let's hope there's a type: typename line.
             var (hopefullyType, typeName) = ReadField(id);
+            //throw new NotImplementedException("Found error 206");
             if (hopefullyType != "type")
                 throw new Exception(
                     $"Expected type name at the beginning of complex object id {id} but instead got {typeName}");
@@ -195,23 +216,34 @@ namespace Assets.Serialization
                     $"Expected a type name (a string) in 'type: ...' expression for object id {id}, but instead got {typeName}");
 
             // Great!  Now what?
-            throw new NotImplementedException("Fill me in");
-
+            //throw new NotImplementedException("Fill me in");
+            
+            var o = Utilities.MakeInstance(type);
+            ReadObject(id);
             // Read the fields until we run out of them
             while (!End && PeekChar != '}')
             {
                 var (field, value) = ReadField(id);
                 // We've got a field and a value.  Now what?
-                throw new NotImplementedException("Fill me in");
+                //throw new NotImplementedException("Fill me in");
+                // question
+                
+                Utilities.SetFieldByName(o, field, value);
+                ReadObject(id);
             }
-
+            
             if (End)
                 throw new EndOfStreamException($"Stream ended in the middle of {"{ }"} expression for id #{id}");
 
             GetChar();  // Swallow close bracket
-
+        
             // We're done.  Now what?
-            throw new NotImplementedException("Fill me in");
+            //throw new NotImplementedException("Fill me in");
+            
+            dict.Add(o, id);
+            prev_object = o;
+            //throw new NotImplementedException("pass 239");
+            return o;
         }
     }
 }
