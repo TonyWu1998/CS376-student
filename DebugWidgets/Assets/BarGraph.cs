@@ -40,15 +40,20 @@ public class BarGraph : MonoBehaviour
     /// </summary>
     public float Max = 1;
 
+    // true if we make it red
+    private bool change_red = false;
+
     // True if we're allowing negative values for this bar graph
     private bool signedDisplay;
-    
+
+    public Vector3 widget_p; 
+
     // Start is called before the first frame update
     // ReSharper disable once UnusedMember.Local
     void Start()
     {
         // TODO: Set the text to the name of this game object
-        
+        Text = this.GetType().Name;
         
         // This sets width to the width of the widget on screen
         var rectTransform = (RectTransform)transform;
@@ -65,6 +70,17 @@ public class BarGraph : MonoBehaviour
         //
         // Important: remember that This BarGraph component is in a different game object than the
         // Bar.  So they have different RectTransforms.  How do you get the transform for the bar?
+        if(Min < 0 || Max < 0)
+        {
+            widget_p = rectTransform.position;
+            BarTransform.localPosition = new Vector3(width / 2, 0, 0);
+            signedDisplay = true;
+        }
+
+
+        if (width < Min || width > Max)
+            change_red = true;
+        
         
     }
 
@@ -78,7 +94,7 @@ public class BarGraph : MonoBehaviour
         // TODO: Determine the color to display it in.
         // If it's out of range, display it in red
         // Otherwise, use green for positive values and blue for negative ones
-        var color = Color.green;
+        var color = change_red ? Color.red : Color.green;
         
         // TODO: if value is out of range (less than Min, greater than Max),
         // then move it in range (set it to Min/Max) so the bar doesn't draw
@@ -87,6 +103,7 @@ public class BarGraph : MonoBehaviour
         // TODO: Call SetWidthPercent to change the width of the bar and set its color
         
         // TODO: Update the text to read: {name} : {value}
+
         
     }
 
