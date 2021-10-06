@@ -53,7 +53,7 @@ public class BarGraph : MonoBehaviour
     void Start()
     {
         // TODO: Set the text to the name of this game object
-        Text = this.GetType().Name;
+        Text.text = this.GetType().Name;
         
         // This sets width to the width of the widget on screen
         var rectTransform = (RectTransform)transform;
