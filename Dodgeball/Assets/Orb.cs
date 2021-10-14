@@ -13,6 +13,7 @@ public class Orb : MonoBehaviour
     void OnBecameInvisible()
     {
         // TODO
+        Destroy(this.gameObject);
     }
 
     /// <summary>
@@ -23,5 +24,9 @@ public class Orb : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         // TODO
+        if(this.gameObject.name != collision.collider.name)
+        {
+            Destroy(this.gameObject);
+        }
     }
 }

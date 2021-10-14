@@ -26,6 +26,19 @@ public class Player : MonoBehaviour
     /// </summary>
     public float OrbVelocity = 10;
 
+    // initial force to the rigidbody
+    public Vector2 INITIAL_FORCE = new Vector2(1.0f, 1.0f);
+
+    public Rigidbody2D rigidbody_me;
+
+    //public Rigidbody2D rigidbody_bullet;
+
+
+    void Start()
+    {
+        rigidbody_me = GetComponent<Rigidbody2D>();
+     
+    }
 
     /// <summary>
     /// Fire if the player is pushing the button for the Fire axis
@@ -38,6 +51,12 @@ public class Player : MonoBehaviour
     void Update()
     {
         // TODO
+        if(Input.GetButton("Fire")) {
+            GameObject bullet = Instantiate(OrbPrefab, this.transform.position+this.transform.right, this.transform.rotation);
+            bullet.GetComponent<Rigidbody2D>().velocity = this.transform.right * OrbVelocity;
+        }
+
+
     }
 
     /// <summary>
@@ -50,6 +69,14 @@ public class Player : MonoBehaviour
     void FixedUpdate()
     {
         // TODO
+        
+        float v = Input.GetAxis("Vertical");
+        float h = Input.GetAxis("Horizontal");
+        Vector2 applied_force = new Vector2(h, v);
+        rigidbody_me.AddForce(EnginePower * applied_force);
+
+        rigidbody_me.angularVelocity = RotateSpeed * Input.GetAxis("Rotate");
+
     }
 
     /// <summary>

@@ -58,6 +58,8 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private Vector2 HeadingToPlayer => OffsetToPlayer.normalized;
 
+    private float fire_next = 0.0f;
+
     /// <summary>
     /// Initialize player and rigidBody fields
     /// </summary>
@@ -75,6 +77,11 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         // TODO
+        if (Time.time > fire_next)
+        {   
+            Fire();
+            fire_next = Time.time + CoolDownTime;
+        }
     }
 
     /// <summary>
@@ -84,6 +91,9 @@ public class Enemy : MonoBehaviour
     private void Fire()
     {
         // TODO
+        GameObject bullet = Instantiate(OrbPrefab, this.transform.position + new Vector3(HeadingToPlayer.x, HeadingToPlayer.y, 0), this.transform.rotation);
+        bullet.GetComponent<Rigidbody2D>().velocity = HeadingToPlayer * OrbVelocity;
+        bullet.GetComponent<Rigidbody2D>().mass = OrbMass;
     }
 
     /// <summary>
